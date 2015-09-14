@@ -106,17 +106,17 @@ struct File_Packet read_encrypted_file(char *args[], int length) {
 * state by first casting to int, decrementing by
 * 1, then casting back to a char.
 */
-__global__ void caesar_cipher(const int file_size, char *file_data, char *dev_decrypted_file_data) {
+__global__ void caesar_cipher(char *file_data, char *dev_decrypted_file_data) {
 	// char decrypted_text[file_size];
-	int i = 0;
-	while(file_data[i] != '\0') {
-		int to_int = (int)file_data[i];
-		char decrypted = (char)(to_int - 1);
-		dev_decrypted_file_data[i] = decrypted;
-		i++;
-	}
+	int i = threadIdx.x;
+	//while(file_data[i] != '\0') {
+	int to_int = (int)file_data[i];
+	char decrypted = (char)(to_int - 1);
+	dev_decrypted_file_data[i] = decrypted;
+		//i++;
+	//}
 	// Null terminate it for check
-	dev_decrypted_file_data[i + 1] = '\0';
+	//dev_decrypted_file_data[i + 1] = '\0';
 }
 
 /*
@@ -125,11 +125,8 @@ __global__ void caesar_cipher(const int file_size, char *file_data, char *dev_de
 * Recieves the memory block back from CUDA,
 * and prints the decrypted message.
 */
-void print_decrypted_message(char *dev_decrypted_file_data) {
-	int i = 0;
-	while(dev_decrypted_file_data[i] != '\0') {
-		printf("%c", dev_decrypted_file_data[i]);
-	}
+void print_decrypted_message(char *decrypted_file_data) {
+	printf("%s\n", decrypted_file_data);
 	exit(0);
 }
 
@@ -145,11 +142,11 @@ int main(int argc, char *argv[]) {
 	// Get file length (chars)
 	int file_size = packet.file_size;
 	// Compute size of memory block we'll need
-	int size = file_size * sizeof(char*);
+	int size = file_size * sizeof(char);
 	
 	// Local memory
 	char *file_data = packet.file_data;
-	char *decrypted_file_data = NULL;
+	char decrypted_file_data[file_size];
 	
 	// Device memory
 	char *dev_file_data;
@@ -162,7 +159,7 @@ int main(int argc, char *argv[]) {
 	cudaMemcpy(dev_file_data, file_data, size, cudaMemcpyHostToDevice);
 
 	// Decrypt the message on the GPU
-	caesar_cipher<<<1, 1>>>(file_size, dev_file_data, dev_decrypted_file_data);
+	caesar_cipher<<<1, file_size>>>(dev_file_data, dev_decrypted_file_data);
 
 	// Not sure if we need this, since we're only running on 1 thread
 	cudaThreadSynchronize();
@@ -170,9 +167,10 @@ int main(int argc, char *argv[]) {
 	cudaMemcpy(decrypted_file_data, dev_decrypted_file_data, size, cudaMemcpyDeviceToHost);
 	
 	// Check we've decrypted
-	print_decrypted_message(dev_decrypted_file_data);
+	print_decrypted_message(decrypted_file_data);
 
-	// Deallocate memory 
+	// Deallocate memory on CUDA
+	cudaFree(dev_file_data);
 	cudaFree(dev_decrypted_file_data);
 
 	// Exit with success
