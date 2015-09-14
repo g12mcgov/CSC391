@@ -9,6 +9,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*
+* File_Packet 
+*
+* Contains a small data packet of
+* the file info (data + size) to 
+* help with dynamic allocation.
+*
+*/
 struct File_Packet {
 	char *file_data;
 	int file_size;
@@ -38,7 +46,7 @@ int get_filename_length(char *filename[]) {
 void check_command_line_args(int argc) {
 	// Ensure command line args are limited to only 1
 	if(argc > 2 || argc == 1) {
-		printf("Invalid Number of Arguments");
+		printf("Invalid Number of Arguments\n");
 		exit(1);
 	}
 }
@@ -98,14 +106,31 @@ struct File_Packet read_encrypted_file(char *args[], int length) {
 * state by first casting to int, decrementing by
 * 1, then casting back to a char.
 */
-__global__ void caesar_cipher(char *file_data, char *decrypted) {
-	int i = 0; 
+__global__ void caesar_cipher(const int file_size, char *file_data, char *dev_decrypted_file_data) {
+	// char decrypted_text[file_size];
+	int i = 0;
 	while(file_data[i] != '\0') {
 		int to_int = (int)file_data[i];
 		char decrypted = (char)(to_int - 1);
-	    printf("%c", decrypted);
+		dev_decrypted_file_data[i] = decrypted;
 		i++;
 	}
+	// Null terminate it for check
+	dev_decrypted_file_data[i + 1] = '\0';
+}
+
+/*
+* print_decrypted_message(char *)
+*
+* Recieves the memory block back from CUDA,
+* and prints the decrypted message.
+*/
+void print_decrypted_message(char *dev_decrypted_file_data) {
+	int i = 0;
+	while(dev_decrypted_file_data[i] != '\0') {
+		printf("%c", dev_decrypted_file_data[i]);
+	}
+	exit(0);
 }
 
 /*
@@ -136,14 +161,20 @@ int main(int argc, char *argv[]) {
 
 	cudaMemcpy(dev_file_data, file_data, size, cudaMemcpyHostToDevice);
 
-	caesar_cipher<<<1, 1>>>(dev_file_data, dev_decrypted_file_data);
+	// Decrypt the message on the GPU
+	caesar_cipher<<<1, 1>>>(file_size, dev_file_data, dev_decrypted_file_data);
 
+	// Not sure if we need this, since we're only running on 1 thread
 	cudaThreadSynchronize();
 
 	cudaMemcpy(decrypted_file_data, dev_decrypted_file_data, size, cudaMemcpyDeviceToHost);
 	
+	// Check we've decrypted
+	print_decrypted_message(dev_decrypted_file_data);
+
 	// Deallocate memory 
 	cudaFree(dev_decrypted_file_data);
 
+	// Exit with success
 	exit(0);
 }
