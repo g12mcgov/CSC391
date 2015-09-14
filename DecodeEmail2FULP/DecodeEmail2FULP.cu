@@ -10,7 +10,7 @@
 #include <string.h>
 
 struct File_Packet {
-	char * file_data;
+	char *file_data;
 	int file_size;
 };
 
