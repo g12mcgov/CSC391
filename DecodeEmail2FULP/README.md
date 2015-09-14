@@ -1,6 +1,6 @@
-DecodeEmail2FULP
+# DecodeEmail2FULP
 
-Full assignment PDF can be found [here](#)
+Full assignment PDF can be found [here](https://github.com/g12mcgov/CSC391/blob/master/DecodeEmail2FULP/CSC%2B391%2BProject%2B1.pdf)
 
 Background
 =======
