@@ -2,7 +2,7 @@
 * @Author: grantmcgovern
 * @Date:   2015-09-11 12:19:51
 * @Last Modified by:   grantmcgovern
-* @Last Modified time: 2015-09-13 15:42:09
+* @Last Modified time: 2015-09-13 21:35:10
 */
 
 #include <stdio.h>
@@ -23,7 +23,7 @@ struct File_Packet {
 *
 */
 int get_filename_length(char *filename[]) {
-	int i;
+	int i = 0;
 	while(filename[1][i] != '\0')
 		i++;
 	return i;
@@ -52,7 +52,6 @@ void check_command_line_args(int argc) {
 */
 struct File_Packet read_encrypted_file(char *args[], int length) {
 	int filename_length = get_filename_length(args);
-	// printf("%d\n", filename_length);
 	char filename[filename_length + 1];
 	// Null terminate the end to ensure no weird chars
 	filename[filename_length] = '\0';
@@ -98,7 +97,7 @@ struct File_Packet read_encrypted_file(char *args[], int length) {
 * state by first casting to int, decrementing by
 * 1, then casting back to a char.
 */
-___global___ void caesar_cipher(char *file_data) {
+void caesar_cipher(char *file_data) {
 	int i = 0; 
 	while(file_data[i] != '\0') {
 		int to_int = (int)file_data[i];
@@ -116,36 +115,6 @@ int main(int argc, char *argv[]) {
 	check_command_line_args(argc);
 	// Get file contents
 	struct File_Packet packet = read_encrypted_file(argv, argc);
-	
-	// Decrypt
-	int file_size = packet.file_size;
-	int size = file_size * sizeof(char*);
-	
-	char *file_data = packet.file_data;
-
-	// Local memory
-	char *decrypted_file_data;
-	
-	// Device memory
-	char *dev_decrypted_file_data;
-	char *dev_file_data;
-	
-	// Allocate memory on the GPU
-	cudaMalloc((void**)&dev_file_data, size);
-	cudaMalloc((void**)&dev_decrypted_file_data, size);
-
-	cudaMemcpy(dev_file_data, file_data, size, cudaMemcpyHostToDevice);
-
-	caesar_cipher<<<1, file_size>>>(dev_file_data, dev_decrypted_file_data);
-
-	cudaThreadSynchronize();
-
-	cudaMemcpy(decrypted_file_data, dev_decrypted_file_data, size, cudaMemcpyDeviceToHost);
-	
-	// Deallocate memory 
-	cudaFree(dev_decrypted_file_data);
-
-	exit(0);
-	//caesar_cipher(packet.file_data, packet.file_size);
-    //return 0;
+	caesar_cipher(packet.file_data);
+    return 0;
 }

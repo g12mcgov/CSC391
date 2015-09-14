@@ -146,6 +146,4 @@ int main(int argc, char *argv[]) {
 	cudaFree(dev_decrypted_file_data);
 
 	exit(0);
-	//caesar_cipher(packet.file_data, packet.file_size);
-    //return 0;
 }
