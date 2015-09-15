@@ -107,16 +107,10 @@ struct File_Packet read_encrypted_file(char *args[], int length) {
 * 1, then casting back to a char.
 */
 __global__ void caesar_cipher(char *file_data, char *dev_decrypted_file_data) {
-	// char decrypted_text[file_size];
 	int i = threadIdx.x;
-	//while(file_data[i] != '\0') {
 	int to_int = (int)file_data[i];
 	char decrypted = (char)(to_int - 1);
 	dev_decrypted_file_data[i] = decrypted;
-		//i++;
-	//}
-	// Null terminate it for check
-	//dev_decrypted_file_data[i + 1] = '\0';
 }
 
 /*
