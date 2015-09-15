@@ -60,7 +60,6 @@ void check_command_line_args(int argc) {
 */
 struct File_Packet read_encrypted_file(char *args[], int length) {
 	int filename_length = get_filename_length(args);
-	// printf("%d\n", filename_length);
 	char filename[filename_length + 1];
 	// Null terminate the end to ensure no weird chars
 	filename[filename_length] = '\0';
@@ -107,9 +106,13 @@ struct File_Packet read_encrypted_file(char *args[], int length) {
 * 1, then casting back to a char.
 */
 __global__ void caesar_cipher(char *file_data, char *dev_decrypted_file_data) {
+	// Get thread id as the index
 	int i = threadIdx.x;
+	// Cast to int
 	int to_int = (int)file_data[i];
+	// Decrement and cast back to char
 	char decrypted = (char)(to_int - 1);
+	// Store the answer
 	dev_decrypted_file_data[i] = decrypted;
 }
 
