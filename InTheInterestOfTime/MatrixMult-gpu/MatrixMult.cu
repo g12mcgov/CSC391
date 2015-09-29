@@ -1,4 +1,12 @@
-#define TILE_WIDTH 2
+/* 
+* @Author: grantmcgovern
+* @Date:   2015-09-28 12:06:08
+* @Last Modified by:   grantmcgovern
+* @Last Modified time: 2015-09-29 12:50:07
+*/
+
+
+#define TILE_WIDTH 16
 
 #include <stdio.h>
 #include <stdio.h>
@@ -13,10 +21,11 @@ __global__ void matrixMult (float *A, float *B, float *C, int width);
 *
 * Populates a matrix with random floats
 */
-void random_populate(float *matrix, int size) {
-   	for (int i = 0; i < size; i++) {
-   		float random = rand() % 20;
-   		matrix[i] = random;
+void random_populate(float *matrix, int N) {
+   	for (int i = 0; i < N; i++) {
+   		for(int j = 0; j < N; j++) {
+   			matrix[i * N + j] = drand48() * 2;
+   		}
    	}
 }
 
@@ -25,10 +34,10 @@ void random_populate(float *matrix, int size) {
 *
 * Prints a matrix in user friendly format
 */
-void print_matrix(int rows, int columns, float *matrix) {
-	for(int i = 0; i < rows; i++) {
-		for(int j = 0; j < columns; j++) {
-			printf("%lf\t", matrix[i * columns + j]);
+void print_matrix(int N, float *matrix) {
+	for(int i = 0; i < N; i++) {
+		for(int j = 0; j < N; j++) {
+			printf("%lf\t", matrix[i * N + j]);
 		}
 		printf("\n");
 	}
@@ -45,18 +54,13 @@ void check_command_line_args(int argc, char *argv[]) {
 	* Ensure command line args are limited to only 3
 	* (Excluding program name)
 	*/
-	if(argc != 5) {
+	if(argc != 2) {
 		printf("Invalid Number of Arguments\n");
 		exit(1);
 	}
-	// Check matrices are valid for multiplication
-	if(atoi(argv[2]) != atoi(argv[3])) {
-		printf("Columns of Matrix A do not match rows of Matrix B\n");
-		exit(1);
-	}
 	// Check command line args are positive
-	int i = 0;
-	for(i = 0; i < argc; i++) {
+	int i = 1;
+	for(i; i < argc; i++) {
 		// We have a negative argument
 		if(atoi(&argv[i][0]) < 0) {
 			printf("Invalid Argument: Negative Number given for Matrix Dimensions \n");
@@ -70,7 +74,7 @@ void check_command_line_args(int argc, char *argv[]) {
 *
 * Writes a matrix to a '.dat' file
 */
-void write_to_file(int matrixC_rows, int matrixC_columns, float *C) {
+void write_to_file(int N, float *C) {
 	FILE *fp;
 	fp = fopen("./product.dat", "w");
 
@@ -81,9 +85,9 @@ void write_to_file(int matrixC_rows, int matrixC_columns, float *C) {
 	}
 	fprintf(fp, "\nMatrix Product:\n");
 	// Write Matrix to file
-	for(int i = 0; i < matrixC_rows; i++) {
-		for(int j = 0; j < matrixC_columns; j++) {
-			fprintf(fp, "%lf\t", C[i * matrixC_columns + j]);
+	for(int i = 0; i < N; i++) {
+		for(int j = 0; j < N; j++) {
+			fprintf(fp, "%lf\t", C[i * N + j]);
 		}
 		fprintf(fp, "\n");
 	}
@@ -96,74 +100,65 @@ void write_to_file(int matrixC_rows, int matrixC_columns, float *C) {
 */
 int main(int argc, char *argv[]) {
 	// Seed random time agaist sys time
-	srand(time(NULL));
+	srand48(time(NULL));
 
 	// Check command line arguments
 	check_command_line_args(argc, argv);
 	
-	// Get Matrix A dimensions
-    int matrixA_rows = atoi(argv[1]);
-    int matrixA_columns = atoi(argv[2]);
-    
-    // Get Matrix B dimensions
-    int matrixB_rows = atoi(argv[3]);
-    int matrixB_columns = atoi(argv[4]);
-
-    // Product Matrix dimensions
-    int matrixC_rows = matrixA_columns;
-	int matrixC_columns = matrixB_rows;
+	// Get Matrix dimensions
+    int N = atoi(argv[1]);
 
     // Get size of memory needed
-    int size_A = sizeof(float) * matrixA_rows * matrixA_columns;
-    int size_B = sizeof(float) * matrixB_rows * matrixB_columns;
+    int size = sizeof(float) * N * N;
 
     // Declare Host Matrices
-	float *A = (float*)malloc(size_A);
-	float *B = (float*)malloc(size_B);
+	float *A = (float*)malloc(size);
+	float *B = (float*)malloc(size);
 
-	// Initialize host memory
-	random_populate(A, matrixA_rows * matrixA_columns);
-	random_populate(B, matrixB_rows * matrixB_columns);
+	// Populate matrices with random numbers
+	random_populate(A, N);
+	random_populate(B, N);
+
+	// Compute + Allocate size for product matrix
+	float* C = (float*)malloc(size);
 
 	// Print Matrices
 	printf("\nMatrix A:\n");
-	print_matrix(matrixA_rows, matrixA_columns, A);
+	print_matrix(N, A);
 	printf("\nMatrix B:\n");
-	print_matrix(matrixB_rows, matrixB_columns, B);
+	print_matrix(N, B);
 
 	// Allocate Device Memory
 	float* dev_A;
 	float* dev_B;
-	cudaMalloc((void**) &dev_A, size_A);
-	cudaMalloc((void**) &dev_B, size_B);
-
-	// Copy Host to Device
-	cudaMemcpy(dev_A, A, size_A, cudaMemcpyHostToDevice);
-	cudaMemcpy(dev_B, B, size_B, cudaMemcpyHostToDevice);
-
-	// Compute + Allocate size for product matrix
-	unsigned int size_C = sizeof(float) * matrixC_rows * matrixC_columns;
-	float* C = (float*) malloc(size_C);
+	float* dev_C;
 
 	// Allocate that memory on the GPU
-	float* dev_C;
-	cudaMalloc((void**) &dev_C, size_C);
+	cudaMalloc((void**) &dev_A, size);
+	cudaMalloc((void**) &dev_B, size);
+	cudaMalloc((void**) &dev_C, size);
+
+	// Copy Host to Device
+	cudaMemcpy(dev_A, A, size, cudaMemcpyHostToDevice);
+	cudaMemcpy(dev_B, B, size, cudaMemcpyHostToDevice);
 
 	// setup execution parameters
-	dim3 dimBlock(TILE_WIDTH, TILE_WIDTH); 
-	dim3 dimGrid((int)ceil(matrixC_columns/dimBlock.x), (int)ceil(matrixC_columns/dimBlock.y));
+	dim3 dimBlock(TILE_WIDTH, TILE_WIDTH);
+	dim3 dimGrid((int)ceil(N/dimBlock.x), (int) ceil(N/dimBlock.y));
 
 	// execute the kernel
-	matrixMult<<< dimGrid, dimBlock >>>(dev_A, dev_B, dev_C, matrixC_columns);
+	matrixMult<<< dimGrid, dimBlock >>>(dev_A, dev_B, dev_C, N);
 
-	cudaMemcpy(C, dev_C, size_C, cudaMemcpyDeviceToHost);
+	cudaThreadSynchronize();
+
+	cudaMemcpy(C, dev_C, size, cudaMemcpyDeviceToHost);
 
 	// Print product matrix
 	printf("\nMatrix C:\n");
-	print_matrix(matrixC_rows, matrixC_columns, C);
+	print_matrix(N, C);
 
 	// Write to file
-	write_to_file(matrixC_rows, matrixC_columns, C);
+	write_to_file(N, C);
 
 	// Free memory on host + GPU
 	free(A);
@@ -181,10 +176,10 @@ int main(int argc, char *argv[]) {
 */
 __global__ void matrixMult(float *A, float *B, float *C, int width) {
  	float sum = 0;
- 
-	int col = blockIdx.x * TILE_WIDTH + threadIdx.x;
-	int row = blockIdx.y * TILE_WIDTH + threadIdx.y;
-	int k = 0;
+ 	int k = 0;
+
+	int col = blockIdx.x*TILE_WIDTH + threadIdx.x;
+ 	int row = blockIdx.y*TILE_WIDTH + threadIdx.y; 
 
 	if(col < width && row < width) {
 		for (k = 0; k < width; k++) {
