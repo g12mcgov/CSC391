@@ -118,7 +118,7 @@ int main(int argc, char *argv[]) {
 	float *A = (float*)malloc(size_A);
 	float *B = (float*)malloc(size_B);
 
-	// 2. initialize host memory
+	// Initialize host memory
 	randomInit(A, matrixA_rows * matrixA_columns);
 	randomInit(B, matrixB_rows * matrixB_columns);
 
@@ -135,14 +135,12 @@ int main(int argc, char *argv[]) {
 	cudaMemcpy(dev_A, A, size_A, cudaMemcpyHostToDevice);
 	cudaMemcpy(dev_B, B, size_B, cudaMemcpyHostToDevice);
 
-	// 4. allocate host memory for the result C
 	unsigned int size_C = sizeof(float) * matrixC_rows * matrixC_columns;
 	float* C = (float*) malloc(size_C);
 
 	float* dev_C;
 	cudaMalloc((void**) &dev_C, size_C);
 
-	// 5. perform the calculation
 	// setup execution parameters
 	dim3 dimBlock(TILE_WIDTH, TILE_WIDTH); 
 	dim3 dimGrid((int)ceil(matrixC_columns/dimBlock.x), (int)ceil(matrixC_columns/dimBlock.y));
@@ -150,79 +148,17 @@ int main(int argc, char *argv[]) {
 	// execute the kernel
 	matrixMult<<< dimGrid, dimBlock >>>(dev_A, dev_B, dev_C, matrixC_columns);
 
-	// 11. copy result from device to host
 	cudaMemcpy(C, dev_C, size_C, cudaMemcpyDeviceToHost);
 
 	print_matrix(matrixC_rows, matrixC_columns, C);
 
-	// 7. clean up memory
 	free(A);
 	free(B);
 	free(C);
 	cudaFree(dev_A);
 	cudaFree(dev_B);
 	cudaFree(dev_C); 
-
- //    // Indices
- //    int i = 0;
- //    int j = 0;
-
- //    A = (int *)malloc(matrixA_rows * matrixA_columns * sizeof(int));
- //    B = (int *)malloc(matrixB_rows * matrixB_columns * sizeof(int));
-
-	// A = populate_matrix(A, matrixA_rows, matrixA_columns);
-	// B = populate_matrix(B, matrixB_rows, matrixB_columns);
-
-	// // Dimensions for product matrix
-	// int matrixC_rows = matrixA_columns;
-	// int matrixC_columns = matrixB_rows;
-
-	// // Initialize C matrix
-	// C = (int*)calloc(matrixC_columns * matrixC_columns, sizeof(int));
-	// for(i = 0; i < matrixC_rows; i++) {
-	// 	for(j = 0; j < matrixC_columns; j++) {
-	// 		C[i * matrixC_columns + j] = 0;
-	// 	}
-	// }	
-
-	// dim3 dimBlock(TILE_WIDTH, TILE_WIDTH);
-	// dim3 dimGrid((int)ceil(matrixC_rows/ dimBlock.x), (int)ceil(matrixC_columns / dimBlock.y));
-
-	// // Declare Device Matrices
- //    int *dev_a = (int *)malloc(matrixA_rows * matrixA_columns * sizeof(int));
- //    int *dev_b = (int *)malloc(matrixB_rows * matrixB_columns * sizeof(int));
- //    int *dev_c = (int *)calloc(matrixC_rows * matrixC_columns, sizeof(int));
-
-	// int size = matrixC_columns * matrixC_rows * sizeof(int);
-
-	// // initialize a and 8 ma8rices here
-	// cudaMalloc(&dev_a, size);
-	// cudaMalloc(&dev_b, size);
-	// cudaMalloc(&dev_c, size);
-
-	// cudaMemcpy(dev_a, A, size, cudaMemcpyHostToDevice);
-	// cudaMemcpy(dev_b, B, size, cudaMemcpyHostToDevice);
-	// cudaMemcpy(dev_c, C, size, cudaMemcpyHostToDevice);
 }
-
-	//matrixMult<<<dimGrid, dimBlock>>>(dev_a, dev_b, dev_c, matrixC_columns);
-
-	// cudaThreadSynchronize();
-
-	// cudaMemcpy(C, dev_c, size, cudaMemcpyDeviceToHost);
-
-	// //printf(c);
-	// for(i = 0; i < matrixC_rows; i++) {
-	// 	for(j = 0; j < matrixC_columns; j++) {
-	// 		printf("%d", C[i][j]);
-	// 		printf("\t");
-	// 	}
-	// 	printf("\n");
-	// }
-
-	// cudaFree(dev_a);
-	// cudaFree(dev_b);
-	// cudaFree(dev_c);
 
 __global__ void matrixMult(float *A, float *B, float *C, int width) {
  	float sum = 0;
