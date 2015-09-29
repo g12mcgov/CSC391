@@ -2,7 +2,7 @@
 * @Author: grantmcgovern
 * @Date:   2015-09-28 12:06:08
 * @Last Modified by:   grantmcgovern
-* @Last Modified time: 2015-09-28 20:49:52
+* @Last Modified time: 2015-09-28 23:55:56
 */
 
 #include <time.h>
@@ -10,16 +10,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-void print_matrix(int rows, int columns, int **matrix) {
+void print_matrix(int rows, int columns, int *matrix) {
 	for(int i = 0; i < rows; i++) {
 		for(int j = 0; j < columns; j++) {
-			printf("%d\t", matrix[i][j]);
+			printf("%d\t", matrix[i * columns + j]);
 		}
 		printf("\n");
 	}
 }
 
-void write_to_file(int matrixC_rows, int matrixC_columns, int **C) {
+void write_to_file(int matrixC_rows, int matrixC_columns, int *C) {
 	FILE *fp;
 	fp = fopen("./product.dat", "w");
 
@@ -32,17 +32,16 @@ void write_to_file(int matrixC_rows, int matrixC_columns, int **C) {
 	// Write Matrix to file
 	for(int i = 0; i < matrixC_rows; i++) {
 		for(int j = 0; j < matrixC_columns; j++) {
-			fprintf(fp, "%d\t", C[i][j]);
+			fprintf(fp, "%d\t", C[i * matrixC_columns + j]);
 		}
 		fprintf(fp, "\n");
 	}
-
 	// Close file
 	fclose(fp);
 }
 
 void matrix_mult(int matrixA_rows, int matrixA_columns, int matrixB_rows, 	\
-				 int matrixB_columns, int **A, int **B) {
+				 int matrixB_columns, int *A, int *B) {
 
 	// Seed random against sys clock
 	srand(time(NULL));
@@ -53,14 +52,14 @@ void matrix_mult(int matrixA_rows, int matrixA_columns, int matrixB_rows, 	\
 	// Populate Matrix A
 	for(i = 0; i < matrixA_rows; i++) {
 		for(j = 0; j < matrixA_columns; j++) {
-			A[i][j] = rand() % 20;
+			A[i * matrixA_columns + j] = rand() % 20;
 		}
 	}
 
 	// Populate Matrix B
 	for(i = 0; i < matrixB_rows; i++) {
 		for(j = 0; j < matrixB_columns; j++) {
-			B[i][j] = rand() % 20;
+			B[i * matrixB_columns + j] = rand() % 20;
 		}
 	}
 
@@ -78,21 +77,24 @@ void matrix_mult(int matrixA_rows, int matrixA_columns, int matrixB_rows, 	\
 	* (In the form m x n)
 	*/
 	printf("\nMatrix C Dimensions: %d x %d \n", matrixC_rows, matrixC_columns);
-	//int C[matrixC_rows][matrixC_columns];
-	//memset(C, 0, matrixC_rows * matrixC_columns * sizeof(int));
-	int **C = (int**)malloc(sizeof(int*)*matrixC_rows);
-    for(i = 0; i < matrixC_columns; i++) {
-    	C[i] = (int*)malloc(sizeof(int)*matrixC_columns);
-    }
+
+	int *C = (int*)calloc(matrixC_columns * matrixC_columns, sizeof(int));
+	for(i = 0; i < matrixC_rows; i++) {
+		for(j = 0; j < matrixC_columns; j++) {
+			C[i * matrixC_columns + j] = 0;
+		}
+	}
+
+	print_matrix(matrixC_columns, matrixC_columns, C);
 
 	int sum = 0;
 	int k = 0;
-	int width = matrixC_rows;
+	int width = matrixC_columns;
 
-	for(int row = 0; row < matrixC_rows; row++) {
+	for(int row = 0; row < matrixC_columns; row++) {
 		for(int col = 0; col < matrixC_columns; col++) {
-			for(int inner = 0; inner < 2; inner++) {
-				C[row][col] = C[row][col] + A[row][inner] * B[inner][col];
+			for(int k = 0; k < width; k++) {
+				C[row * width + col] += A[row * width + k] * B[k * width + col];
 			}
 		}
 	}
@@ -146,22 +148,15 @@ int main(int argc, char *argv[]) {
     int matrixB_columns = atoi(argv[4]);
     
     // Declare Matrices
-    int **A;
-    int **B;
+    int *A;
+    int *B;
 
     // Index
     int i = 0;
 
-    A = (int**)malloc(sizeof(int*)*matrixA_rows);
-    for(i = 0; i < matrixA_columns; i++) {
-    	A[i] = (int*)malloc(sizeof(int)*matrixA_rows);
-    }
-
-    B = (int**)malloc(sizeof(int*)*matrixB_rows);
-	for(i = 0; i < matrixB_columns; i++) {
-		B[i] = (int*)malloc(sizeof(int)*matrixB_rows);
-	}
-
+    A = (int *)malloc(matrixA_rows * matrixA_columns * sizeof(int));
+    B = (int *)malloc(matrixB_rows * matrixB_columns * sizeof(int));
+    
     // Perform Multiplication
     matrix_mult(matrixA_rows, matrixA_columns, matrixB_rows, matrixB_columns, A, B);
 
