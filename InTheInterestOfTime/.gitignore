@@ -34,4 +34,7 @@
 temp
 
 # Sublime SFTP
-sftp-config.json
+*.json
+
+# Mac OSX
+.DS_Store
