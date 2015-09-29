@@ -2,7 +2,7 @@
 * @Author: grantmcgovern
 * @Date:   2015-09-28 12:06:08
 * @Last Modified by:   grantmcgovern
-* @Last Modified time: 2015-09-29 12:50:07
+* @Last Modified time: 2015-09-29 17:06:30
 */
 
 #include <time.h>
@@ -10,16 +10,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-void print_matrix(int rows, int columns, float *matrix) {
-	for(int i = 0; i < rows; i++) {
-		for(int j = 0; j < columns; j++) {
-			printf("%lf\t", matrix[i * columns + j]);
+void print_matrix(int N, float *matrix) {
+	for(int i = 0; i < N; i++) {
+		for(int j = 0; j < N; j++) {
+			printf("%lf\t", matrix[i * N + j]);
 		}
 		printf("\n");
 	}
 }
 
-void write_to_file(int matrixC_rows, int matrixC_columns, float *C) {
+void write_to_file(int N, float *C) {
 	FILE *fp;
 	fp = fopen("./product.dat", "w");
 
@@ -30,9 +30,9 @@ void write_to_file(int matrixC_rows, int matrixC_columns, float *C) {
 	}
 	fprintf(fp, "\nMatrix Product:\n");
 	// Write Matrix to file
-	for(int i = 0; i < matrixC_rows; i++) {
-		for(int j = 0; j < matrixC_columns; j++) {
-			fprintf(fp, "%lf\t", C[i * matrixC_columns + j]);
+	for(int i = 0; i < N; i++) {
+		for(int j = 0; j < N; j++) {
+			fprintf(fp, "%lf\t", C[i * N + j]);
 		}
 		fprintf(fp, "\n");
 	}
@@ -40,8 +40,7 @@ void write_to_file(int matrixC_rows, int matrixC_columns, float *C) {
 	fclose(fp);
 }
 
-void matrix_mult(int matrixA_rows, int matrixA_columns, int matrixB_rows, 	\
-				 int matrixB_columns, float *A, float *B) {
+void matrix_mult(int N, float *A, float *B) {
 
 	// Seed random against sys clock
 	srand48(time(NULL));
@@ -50,62 +49,50 @@ void matrix_mult(int matrixA_rows, int matrixA_columns, int matrixB_rows, 	\
 	int j = 0;
 
 	// Populate Matrix A
-	for(i = 0; i < matrixA_rows; i++) {
-		for(j = 0; j < matrixA_columns; j++) {
-			A[i * matrixA_columns + j] = drand48();
+	for(i = 0; i < N; i++) {
+		for(j = 0; j < N; j++) {
+			A[i * N + j] = drand48();
 		}
 	}
 
 	// Populate Matrix B
-	for(i = 0; i < matrixB_rows; i++) {
-		for(j = 0; j < matrixB_columns; j++) {
-			B[i * matrixB_columns + j] = drand48();
+	for(i = 0; i < N; i++) {
+		for(j = 0; j < N; j++) {
+			B[i * N + j] = drand48();
 		}
 	}
 
 	printf("\nMatrix A:\n");
-	print_matrix(matrixA_rows, matrixA_columns, A);
+	print_matrix(N, A);
 	printf("\nMatrix B: \n");
-	print_matrix(matrixB_rows, matrixB_columns, B);
-
-	// Dimensions for product matrix
-	int matrixC_rows = matrixA_columns;
-	int matrixC_columns = matrixB_rows;
+	print_matrix(N, B);
 
 	/*
 	* Declare new Matrix [C] to recieve our answer
 	* (In the form m x n)
 	*/
-	printf("\nMatrix C Dimensions: %d x %d \n", matrixC_rows, matrixC_columns);
+	float *C = (float*)calloc(N * N, sizeof(float));
 
-	float *C = (float*)calloc(matrixC_columns * matrixC_columns, sizeof(float));
-	// for(i = 0; i < matrixC_rows; i++) {
-	// 	for(j = 0; j < matrixC_columns; j++) {
-	// 		C[i * matrixC_columns + j] = 0;
-	// 	}
-	// }
-
-	//float sum = 0;
+	float sum = 0;
 	int k = 0;
-	int width = matrixC_columns;
 
 	// Actually perform the multiplication
-	for(int row = 0; row < matrixC_columns; row++) {
-		for(int col = 0; col < matrixC_columns; col++) {
-			for(int k = 0; k < width; k++) {
-				C[row * width + col] += A[row * width + k] * B[k * width + col];
+	for(int row = 0; row < N; row++) {
+		for(int col = 0; col < N; col++) {
+			for(int k = 0; k < N; k++) {
+				C[row * N + col] += A[row * N + k] * B[k * N + col];
 			}
 		}
 	}
 	// Print Product Matrix
 	printf("\nMatrix C:\n");
-	print_matrix(matrixC_rows, matrixC_columns, C);
-	// Write Product Matrix
-	write_to_file(matrixC_rows, matrixC_columns, C);
+	print_matrix(N, C);
+	// Write Product Matrix to file
+	write_to_file(N, C);
 }
 
 /*
-* check_command_line_args(int)
+* check_command_line_args(int, char *)
 *
 * Checks to see whether used used proper
 * number of command line arguments.
@@ -115,17 +102,13 @@ void check_command_line_args(int argc, char *argv[]) {
 	* Ensure command line args are limited to only 3
 	* (Excluding program name)
 	*/
-	if(argc != 5) {
+	if(argc != 2) {
 		printf("Invalid Number of Arguments\n");
 		exit(1);
 	}
-	// Check matrices are valid for multiplication
-	if(atoi(argv[2]) != atoi(argv[3])) {
-		printf("Columns of Matrix A do not match rows of Matrix B\n");
-		exit(1);
-	}
 	// Check command line args are positive
-	for(int i = 0; i < argc; i++) {
+	int i = 1;
+	for( ; i < argc; i++) {
 		// We have a negative argument
 		if(atoi(&argv[i][0]) < 0) {
 			printf("Invalid Argument: Negative Number given for Matrix Dimensions \n");
@@ -138,13 +121,8 @@ int main(int argc, char *argv[]) {
 	// Check the command line arguments
 	check_command_line_args(argc, argv);
     
-    // Get Matrix A dimensions
-    int matrixA_rows = atoi(argv[1]);
-    int matrixA_columns = atoi(argv[2]);
-    
-    // Get Matrix B dimensions
-    int matrixB_rows = atoi(argv[3]);
-    int matrixB_columns = atoi(argv[4]);
+    // Get matrix
+    int N = atoi(argv[1]);
     
     // Declare Matrices
     float *A;
@@ -153,11 +131,23 @@ int main(int argc, char *argv[]) {
     // Index
     int i = 0;
 
-    A = (float *)malloc(matrixA_rows * matrixA_columns * sizeof(float));
-    B = (float *)malloc(matrixB_rows * matrixB_columns * sizeof(float));
+    A = (float *)malloc(N * N * sizeof(float));
+    B = (float *)malloc(N * N * sizeof(float));
+
+    // Timing program execution
+	clock_t start;
+	clock_t stop;
+
+	start = clock();
 
     // Perform Multiplication
-    matrix_mult(matrixA_rows, matrixA_columns, matrixB_rows, matrixB_columns, A, B);
+    matrix_mult(N, A, B);
+
+    stop = clock();
+
+    // Display time taken
+	double time_taken = ((double)(stop - start)) / CLOCKS_PER_SEC;
+	printf("\nExecuted in: %lf seconds\n", time_taken);
 
     return 0;
 }

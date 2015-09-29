@@ -8,13 +8,16 @@
 
 #define TILE_WIDTH 16
 
+#include <math.h>
 #include <stdio.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include <string.h>
+#include <unistd.h>
 
+// GPU Methods
 __global__ void matrixMult (float *A, float *B, float *C, int width);
+__global__ void wakeGPU(void);
 
 /*
 * random_populate(float *, int)
@@ -60,7 +63,7 @@ void check_command_line_args(int argc, char *argv[]) {
 	}
 	// Check command line args are positive
 	int i = 1;
-	for(i; i < argc; i++) {
+	for( ; i < argc; i++) {
 		// We have a negative argument
 		if(atoi(&argv[i][0]) < 0) {
 			printf("Invalid Argument: Negative Number given for Matrix Dimensions \n");
@@ -146,16 +149,34 @@ int main(int argc, char *argv[]) {
 	dim3 dimBlock(TILE_WIDTH, TILE_WIDTH);
 	dim3 dimGrid((int)ceil(N/dimBlock.x), (int) ceil(N/dimBlock.y));
 
+	
+	// Timing program execution
+	clock_t start;
+	clock_t stop;
+	
+	// Wake up GPU
+	wakeGPU<<<1, 1>>>();
+
+	start = clock();
+
 	// execute the kernel
 	matrixMult<<< dimGrid, dimBlock >>>(dev_A, dev_B, dev_C, N);
 
+	// Synchronize threads, make sure all finished before copying memory back
 	cudaThreadSynchronize();
 
+	stop = clock();
+
+	// Copy device memory back to host
 	cudaMemcpy(C, dev_C, size, cudaMemcpyDeviceToHost);
 
 	// Print product matrix
 	printf("\nMatrix C:\n");
 	print_matrix(N, C);
+
+	// Display time taken
+	double time_taken = ((double)(stop - start)) / CLOCKS_PER_SEC;
+	printf("\nExecuted in: %lf seconds\n", time_taken);
 
 	// Write to file
 	write_to_file(N, C);
@@ -187,4 +208,13 @@ __global__ void matrixMult(float *A, float *B, float *C, int width) {
 		}
 		C[row * width + col] = sum;
 	}
+}
+
+/*
+* wakeGPU(void)
+*
+* Assures the GPU is alive when we want to use it. 
+*/
+__global__ void wakeGPU(void) {
+	printf("\nGPU Alive!\n");
 }
