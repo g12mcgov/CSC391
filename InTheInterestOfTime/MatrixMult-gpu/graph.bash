@@ -1,10 +1,14 @@
 #!/bin/bash
 
-# compile program
-make clean
-make
+make clean >/dev/null
 
-for i in {0..10..2}
-do
-	./MatrixMult "$i" >> output.txt 2>&1
+MAX1=32
+for j in {0..3000..100}
+	do
+	for (( i=2; i <= MAX1; i++))
+		do
+		sed -i "/define TILE_WIDTH/c\#define TILE_WIDTH $i" MatrixMult.cu
+		make >/dev/null
+		./MatrixMult "$j" | tee -a output.txt
+	done
 done

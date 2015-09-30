@@ -6,7 +6,7 @@
 */
 
 
-#define TILE_WIDTH 17
+#define TILE_WIDTH 40
 
 #include <math.h>
 #include <stdio.h>
@@ -126,10 +126,10 @@ int main(int argc, char *argv[]) {
 	float* C = (float*)malloc(size);
 
 	// Print Matrices
-	printf("\nMatrix A:\n");
-	print_matrix(N, A);
-	printf("\nMatrix B:\n");
-	print_matrix(N, B);
+	//printf("\nMatrix A:\n");
+	//print_matrix(N, A);
+	//printf("\nMatrix B:\n");
+	//print_matrix(N, B);
 
 	// Allocate Device Memory
 	float* dev_A;
@@ -173,12 +173,14 @@ int main(int argc, char *argv[]) {
 	cudaMemcpy(C, dev_C, size, cudaMemcpyDeviceToHost);
 
 	// Print product matrix
-	printf("\nMatrix C:\n");
-	print_matrix(N, C);
+	//printf("\nMatrix C:\n");
+	//print_matrix(N, C);
 
 	// Display time taken
-	double time_taken = ((double)(stop - start)) / CLOCKS_PER_SEC;
-	printf("\nExecuted in: %lf seconds\n", time_taken);
+	//double time_taken = ((double)(stop - start)) / CLOCKS_PER_SEC;
+	//printf("\nExecuted in: %lf seconds\n", time_taken);
+	float time_taken = ((double)(stop - start)) / CLOCKS_PER_SEC;
+	printf("%lf\t%d\t%d\n", time_taken, TILE_WIDTH, N);
 
 	// Write to file
 	write_to_file(N, C);
@@ -218,5 +220,5 @@ __global__ void matrixMult(float *A, float *B, float *C, int width) {
 * Assures the GPU is alive when we want to use it. 
 */
 __global__ void wakeGPU(void) {
-	printf("\nGPU Alive!\n");
+	//printf("\nGPU Alive!\n");
 }
