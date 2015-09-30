@@ -1,14 +1,43 @@
 #!/bin/bash
 
-make clean >/dev/null
+# make clean >/dev/null
 
-MAX1=32
-for j in {0..3000..100}
+# Matrix = 100
+for i in {0..50..10}
 	do
-	for (( i=2; i <= MAX1; i++))
-		do
-		sed -i "/define TILE_WIDTH/c\#define TILE_WIDTH $i" MatrixMult.cu
-		make >/dev/null
-		./MatrixMult "$j" | tee -a output.txt
-	done
+	sed -i "/define TILE_WIDTH/c\#define TILE_WIDTH $i" MatrixMult.cu
+	make >/dev/null
+	./MatrixMult 100 | tee -a output.txt
+done
+
+# Matrix = 500
+for i in {0..50..10}
+	do
+	sed -i "/define TILE_WIDTH/c\#define TILE_WIDTH $i" MatrixMult.cu
+	make >/dev/null
+	./MatrixMult 500 | tee -a output.txt
+done
+
+# Matrix = 1000
+for i in {0..50..10}
+	do
+	sed -i "/define TILE_WIDTH/c\#define TILE_WIDTH $i" MatrixMult.cu
+	make >/dev/null
+	./MatrixMult 1000 | tee -a output.txt
+done
+
+# Matrix = 2000
+for i in {0..50..10}
+	do
+	sed -i "/define TILE_WIDTH/c\#define TILE_WIDTH $i" MatrixMult.cu
+	make >/dev/null
+	./MatrixMult 2000 | tee -a output.txt
+done
+
+# Matrix = 3000
+for i in {0..50..10}
+	do
+	sed -i "/define TILE_WIDTH/c\#define TILE_WIDTH $i" MatrixMult.cu
+	make >/dev/null
+	./MatrixMult 3000 | tee -a output.txt
 done

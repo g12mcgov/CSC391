@@ -2,7 +2,7 @@
 * @Author: grantmcgovern
 * @Date:   2015-09-28 12:06:08
 * @Last Modified by:   grantmcgovern
-* @Last Modified time: 2015-09-29 21:41:32
+* @Last Modified time: 2015-09-30 02:00:34
 */
 
 #include <time.h>
@@ -68,10 +68,11 @@ void matrix_mult(int N, float *A, float *B) {
 		}
 	}
 
-	// printf("\nMatrix A:\n");
-	// print_matrix(N, A);
-	// printf("\nMatrix B: \n");
-	// print_matrix(N, B);
+	// Print matrices
+	printf("\nMatrix A:\n");
+	print_matrix(N, A);
+	printf("\nMatrix B: \n");
+	print_matrix(N, B);
 
 	/*
 	* Declare new Matrix [C] to recieve our answer
@@ -93,8 +94,8 @@ void matrix_mult(int N, float *A, float *B) {
 		}
 	}
 	// Print Product Matrix
-	//printf("\nMatrix C:\n");
-	//print_matrix(N, C);
+	printf("\nMatrix C:\n");
+	print_matrix(N, C);
 	// Write Product Matrix to file
 	write_to_file(N, C);
 }
@@ -155,8 +156,8 @@ int main(int argc, char *argv[]) {
 
     // Display time taken
 	float time_taken = ((double)(stop - start)) / CLOCKS_PER_SEC;
-	printf("%lf,%d\n", time_taken, N);
-	//printf("Executed in: %lf seconds", time_taken);
+	printf("\nExecuted in: %lf seconds\n", time_taken);
+	//printf("%lf\t%d\n", time_taken, N);
 
     return 0;
 }

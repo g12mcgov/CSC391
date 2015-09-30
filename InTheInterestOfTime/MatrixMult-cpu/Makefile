@@ -1,5 +1,9 @@
-MatrixMult:
-	gcc -o MatrixMult MatrixMult.c 
+GCC=gcc
+
+all: MatrixMult
+
+MatrixMult:      MatrixMult.c
+	$(GCC) -o MatrixMult MatrixMult.c
 clean:
-	rm -f MatrixMult *.o
+	$(RM) -f MatrixMult MatrixMult.o
 
