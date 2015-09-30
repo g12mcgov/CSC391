@@ -1,4 +1,4 @@
-GCC = nvcc
+GCC=nvcc
 
 all: MatrixMult
 
