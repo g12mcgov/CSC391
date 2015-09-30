@@ -6,7 +6,7 @@
 */
 
 
-#define TILE_WIDTH 16
+#define TILE_WIDTH 17
 
 #include <math.h>
 #include <stdio.h>
@@ -147,7 +147,7 @@ int main(int argc, char *argv[]) {
 
 	// setup execution parameters
 	dim3 dimBlock(TILE_WIDTH, TILE_WIDTH);
-	dim3 dimGrid((int)ceil(N/dimBlock.x), (int) ceil(N/dimBlock.y));
+	dim3 dimGrid((int)ceil(N/dimBlock.x)+1, (int) ceil(N/dimBlock.y)+1);
 
 	
 	// Timing program execution
@@ -157,6 +157,7 @@ int main(int argc, char *argv[]) {
 	// Wake up GPU
 	wakeGPU<<<1, 1>>>();
 
+	// Start the clock
 	start = clock();
 
 	// execute the kernel
@@ -165,6 +166,7 @@ int main(int argc, char *argv[]) {
 	// Synchronize threads, make sure all finished before copying memory back
 	cudaThreadSynchronize();
 
+	// Stop the clock
 	stop = clock();
 
 	// Copy device memory back to host

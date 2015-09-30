@@ -2,7 +2,7 @@
 * @Author: grantmcgovern
 * @Date:   2015-09-28 12:06:08
 * @Last Modified by:   grantmcgovern
-* @Last Modified time: 2015-09-29 17:06:30
+* @Last Modified time: 2015-09-29 21:41:32
 */
 
 #include <time.h>
@@ -11,8 +11,11 @@
 #include <string.h>
 
 void print_matrix(int N, float *matrix) {
-	for(int i = 0; i < N; i++) {
-		for(int j = 0; j < N; j++) {
+	int i = 0;
+	int j = 0;
+
+	for(i = 0; i < N; i++) {
+		for(j = 0; j < N; j++) {
 			printf("%lf\t", matrix[i * N + j]);
 		}
 		printf("\n");
@@ -29,9 +32,12 @@ void write_to_file(int N, float *C) {
 		exit(1);
 	}
 	fprintf(fp, "\nMatrix Product:\n");
-	// Write Matrix to file
-	for(int i = 0; i < N; i++) {
-		for(int j = 0; j < N; j++) {
+	
+	int i = 0;
+	int j = 0;
+
+	for(i = 0; i < N; i++) {
+		for(j = 0; j < N; j++) {
 			fprintf(fp, "%lf\t", C[i * N + j]);
 		}
 		fprintf(fp, "\n");
@@ -62,10 +68,10 @@ void matrix_mult(int N, float *A, float *B) {
 		}
 	}
 
-	printf("\nMatrix A:\n");
-	print_matrix(N, A);
-	printf("\nMatrix B: \n");
-	print_matrix(N, B);
+	// printf("\nMatrix A:\n");
+	// print_matrix(N, A);
+	// printf("\nMatrix B: \n");
+	// print_matrix(N, B);
 
 	/*
 	* Declare new Matrix [C] to recieve our answer
@@ -77,16 +83,18 @@ void matrix_mult(int N, float *A, float *B) {
 	int k = 0;
 
 	// Actually perform the multiplication
-	for(int row = 0; row < N; row++) {
-		for(int col = 0; col < N; col++) {
-			for(int k = 0; k < N; k++) {
+	int row = 0;
+	int col = 0;
+	for(row = 0; row < N; row++) {
+		for(col = 0; col < N; col++) {
+			for(k = 0; k < N; k++) {
 				C[row * N + col] += A[row * N + k] * B[k * N + col];
 			}
 		}
 	}
 	// Print Product Matrix
-	printf("\nMatrix C:\n");
-	print_matrix(N, C);
+	//printf("\nMatrix C:\n");
+	//print_matrix(N, C);
 	// Write Product Matrix to file
 	write_to_file(N, C);
 }
@@ -146,8 +154,9 @@ int main(int argc, char *argv[]) {
     stop = clock();
 
     // Display time taken
-	double time_taken = ((double)(stop - start)) / CLOCKS_PER_SEC;
-	printf("\nExecuted in: %lf seconds\n", time_taken);
+	float time_taken = ((double)(stop - start)) / CLOCKS_PER_SEC;
+	printf("%lf,%d\n", time_taken, N);
+	//printf("Executed in: %lf seconds", time_taken);
 
     return 0;
 }
