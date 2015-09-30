@@ -1,6 +1,7 @@
 # Parallelized Matrix Multiplication
 
 ![preview_1](http://i.imgur.com/k30gCYE.png)
+![preview_2](http://i.imgur.com/MuNjcF2.png)
 
 Full assignment PDF can be found [here](https://www.dropbox.com/s/xbuqdqo3w49hybd/CSC%2B391%2BProject%2B2.pdf?dl=0).
 
