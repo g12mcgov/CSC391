@@ -35,7 +35,7 @@ Then run:
 
 And finally, 
 
-`./MatrixMult 100`
+`$ ./MatrixMult 100`
 
 For a NxN matrix of size **100**.
 
