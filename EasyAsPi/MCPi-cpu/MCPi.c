@@ -2,7 +2,7 @@
 * @Author: grantmcgovern
 * @Date:   2015-10-19 14:45:45
 * @Last Modified by:   grantmcgovern
-* @Last Modified time: 2015-10-19 18:34:00
+* @Last Modified time: 2015-10-19 18:47:42
 */
 
 #include <stdio.h>
@@ -10,6 +10,23 @@
 #include <time.h>
 #include <stdlib.h>
 
+/**
+ * For printing certain statements.
+ */
+const unsigned int DEBUG = 0;
+
+/**
+ * Frequencies
+ *
+ * Holds the values for frequencies in the following
+ * format:
+ *
+ * _0x = 0.0
+ * _1x = 1.0
+ * _2x = 2.0
+ * 
+ * etc..
+ */
 struct Frequencies {
 	unsigned int _0x;
 	unsigned int _1x;
@@ -37,12 +54,26 @@ void check_command_line_args(int argc) {
 	}
 }
 
+/**
+ * add_frequency(struct Frequencies *, float)
+ * @param frequencies 
+ * @param value
+ *
+ * 
+ */
 void add_frequency(struct Frequencies *frequencies, float value) {
 	/*
 	 * Convert to int since we can't do switch 
 	 * statements with floats/doubles in C.
+	 *
+	 * i.e:
+	 *
+	 * 0.1 -> 1
+	 * 0.2 -> 2
+	 * 0.3 -> 3
+	 *
+	 * etc...
 	 */
-	printf("Value: %d, ", (int)(value * 10.0));
 	switch((int)(value * 10.0)) {
 		case 0:
 			frequencies->_0x++;
@@ -77,6 +108,15 @@ void add_frequency(struct Frequencies *frequencies, float value) {
 	}
 }
 
+/**
+ * compute_frequency(int, float)
+ * @param  frequency 
+ * @param  num_points
+ * @return (float) frequency value
+ *
+ * Computes frequency for a decimal place value (0.1, 0.2, etc...)
+ * by dividing it by total # of random points.
+ */
 float compute_frequency(int frequency, float num_points) {
 	return (frequency / num_points);
 }
@@ -85,6 +125,8 @@ float compute_frequency(int frequency, float num_points) {
  * print_frequency(struct Frequencies *, int)
  * @param frequencies 
  * @param num_points
+ *
+ * Prints out the count and frequencies (computed)
  */
 void print_frequency(struct Frequencies *frequencies, int num_points) {
 	printf("\nFrequencies:\n");
@@ -110,6 +152,12 @@ void print_frequency(struct Frequencies *frequencies, int num_points) {
 		frequencies->_9x, compute_frequency(frequencies->_9x, num_points));
 }
 
+/**
+ * monte_carlo(int)
+ * @param num_points
+ *
+ * Estimates the value of Pi via the Monte Carlo algorithm.
+ */
 void monte_carlo(int num_points) {
 	double x = 0.0;
 	double y = 0.0;
@@ -147,18 +195,28 @@ void monte_carlo(int num_points) {
 		y = drand48();
 		
 		// X
-		printf("X: %f, ", x);
+		if(DEBUG) {
+			printf("X: %f, ", x); 
+		}
+
 		float rounded_x = floorf(x * 10.0) / 10.0;
 		add_frequency(&frequencies, rounded_x);
 
-		printf("\n");
+		if(DEBUG) {
+			printf("\n");
+		}
 
 		// Y
-		printf("Y: %f, ", y);
+		if(DEBUG) {
+			printf("Y: %f, ", y);
+		}
+
 		float rounded_y = floorf(y * 10.0) / 10.0;
 		add_frequency(&frequencies, rounded_y);
 
-		printf("\n\n");
+		if(DEBUG) {
+			printf("\n\n");
+		}
 
 		z = x*x + y*y;
 
@@ -166,10 +224,14 @@ void monte_carlo(int num_points) {
 			count++;
 		}
 	}
+	// Print program params
 	printf("Count: %d\n", count);
 	printf("# Points: %d\n", num_points);
+	
+	// Compute estimated pi
 	double pi = (double)(count * 1.0 / num_points * 4.0);
 	
+	// Print Pi value
 	printf("Estimate of pi: %f\n", pi); 
 
 	// Print Frequencies
