@@ -2,7 +2,7 @@
 * @Author: grantmcgovern
 * @Date:   2015-10-19 14:45:45
 * @Last Modified by:   grantmcgovern
-* @Last Modified time: 2015-10-19 18:47:42
+* @Last Modified time: 2015-10-19 18:52:33
 */
 
 #include <stdio.h>
@@ -59,7 +59,9 @@ void check_command_line_args(int argc) {
  * @param frequencies 
  * @param value
  *
- * 
+ * Increments the frequency for a specific value. Uses
+ * pass-by-reference to keep adding to the same frequency
+ * counts.
  */
 void add_frequency(struct Frequencies *frequencies, float value) {
 	/*
