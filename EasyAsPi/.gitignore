@@ -32,3 +32,8 @@
 *.x86_64
 *.hex
 
+# Temp executables
+temp*
+
+# SFTP
+*.json
