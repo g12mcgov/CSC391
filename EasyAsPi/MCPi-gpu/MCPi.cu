@@ -49,7 +49,7 @@ __global__ void randoms(curandState_t *states, int *num_points, \
 						int *x_array, int *y_array, int *counts) {
 	// Only care about X dimension
 	int globalId = blockDim.x * blockIdx.x + threadIdx.x;
-	if (globalId > *num_points) {
+	if (globalId >= *num_points) {
 		return; 
 	}
 	
@@ -76,6 +76,12 @@ __global__ void randoms(curandState_t *states, int *num_points, \
 	counts[globalId] = (z <= 1.0) ? 1 : 0;
 }
 
+/**
+ * [print_histogram description]
+ * @param num_points [description]
+ * @param x_array    [description]
+ * @param y_array    [description]
+ */
 void print_histogram(int num_points, int *x_array, int *y_array) {
 	printf("\nFrequencies:\n");
 	/**
@@ -106,8 +112,10 @@ void print_histogram(int num_points, int *x_array, int *y_array) {
 		}
 		// Loop through and print histogram
 		for(i = 0; i < 10; i++) {
-			printf("0.%dx: Frequency: %d\n", i, histogram_array[i]);	
-			fprintf(file, "0.%dx: Frequency: %d\n", i, histogram_array[i]);
+			printf("%d\t%lf\n", i, (
+				(float)histogram_array[i] / ((float)num_points * 2.0)));	
+			fprintf(file, "%d\t%lf\n", i, (
+				(float)histogram_array[i] / ((float)num_points * 2.0)));
 		}
 		exit(0);
 	}
@@ -127,7 +135,7 @@ void print_pi_estimation(int num_points, int *counts) {
 	int i = 0;
 	int sum = 0;
 	for(i = 0; i < num_points; i++) {
-		sum = sum + counts[i];
+		sum += counts[i];
 	}
 	// Compute estimated pi
 	double pi = (double)(4.0 * ((double)sum / (double)num_points));
@@ -158,7 +166,7 @@ int main(int argc, char *argv[]) {
 	int block_size = (int)(ceil(num_points / THREADS) + 1);
 
 	// initialize all of the random states on the GPU
-	init<<< block_size, THREADS >>>(time(NULL), dev_states);
+	init<<< 1, 2 * num_points >>>(time(NULL), dev_states);
 	
 	// Stores the counts for each thread
 	int *counts = (int *)malloc(num_points * sizeof(int));

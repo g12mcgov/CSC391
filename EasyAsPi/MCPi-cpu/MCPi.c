@@ -2,7 +2,7 @@
 * @Author: grantmcgovern
 * @Date:   2015-10-19 14:45:45
 * @Last Modified by:   grantmcgovern
-* @Last Modified time: 2015-10-21 00:55:20
+* @Last Modified time: 2015-10-21 01:30:06
 */
 
 #include <math.h>
@@ -120,7 +120,7 @@ void add_frequency(struct Frequencies *frequencies, int value) {
  * by dividing it by total # of random points.
  */
 float compute_frequency(int frequency, float num_points) {
-	return (frequency / num_points);
+	return ((float)frequency / ((float)num_points * 2.0));
 }
 
 /**
@@ -155,16 +155,16 @@ void print_frequency(struct Frequencies *frequencies, int num_points) {
 			frequencies->_9x, compute_frequency(frequencies->_9x, num_points));
 	}
 	else {
-		printf("%d\n", frequencies->_0x);
-		printf("%d\n", frequencies->_1x);
-		printf("%d\n", frequencies->_2x);
-		printf("%d\n", frequencies->_3x);
-		printf("%d\n", frequencies->_4x);
-		printf("%d\n", frequencies->_5x);
-		printf("%d\n", frequencies->_6x);
-		printf("%d\n", frequencies->_7x);
-		printf("%d\n", frequencies->_8x);
-		printf("%d\n", frequencies->_9x);
+		printf("0\t%lf\n", compute_frequency(frequencies->_0x, num_points));
+		printf("1\t%lf\n", compute_frequency(frequencies->_1x, num_points));
+		printf("2\t%lf\n", compute_frequency(frequencies->_2x, num_points));
+		printf("3\t%lf\n", compute_frequency(frequencies->_3x, num_points));
+		printf("4\t%lf\n", compute_frequency(frequencies->_4x, num_points));
+		printf("5\t%lf\n", compute_frequency(frequencies->_5x, num_points));
+		printf("6\t%lf\n", compute_frequency(frequencies->_6x, num_points));
+		printf("7\t%lf\n", compute_frequency(frequencies->_7x, num_points));
+		printf("8\t%lf\n", compute_frequency(frequencies->_8x, num_points));
+		printf("9\t%lf\n", compute_frequency(frequencies->_9x, num_points));
 	}
 }
 
@@ -172,21 +172,21 @@ void print_frequency(struct Frequencies *frequencies, int num_points) {
  * write_to_file(struct Frequencies *)
  * @param frequencies [description]
  */
-void write_to_file(struct Frequencies *frequencies) {
+void write_to_file(struct Frequencies *frequencies, int num_points) {
 	// Open file for writing
 	FILE *file = fopen("./freq.dat", "w+");
 	// As long as we can write to the file
 	if(file != NULL) {
-		fprintf(file, "0\t%d\n", frequencies->_0x);
-		fprintf(file, "1\t%d\n", frequencies->_1x);
-		fprintf(file, "2\t%d\n", frequencies->_2x);
-		fprintf(file, "3\t%d\n", frequencies->_3x);
-		fprintf(file, "4\t%d\n", frequencies->_4x);
-		fprintf(file, "5\t%d\n", frequencies->_5x);
-		fprintf(file, "6\t%d\n", frequencies->_6x);
-		fprintf(file, "7\t%d\n", frequencies->_7x);
-		fprintf(file, "8\t%d\n", frequencies->_8x);
-		fprintf(file, "9\t%d\n", frequencies->_9x);
+		fprintf(file, "0\t%lf\n", compute_frequency(frequencies->_0x, num_points));
+		fprintf(file, "1\t%lf\n", compute_frequency(frequencies->_1x, num_points));
+		fprintf(file, "2\t%lf\n", compute_frequency(frequencies->_2x, num_points));
+		fprintf(file, "3\t%lf\n", compute_frequency(frequencies->_3x, num_points));
+		fprintf(file, "4\t%lf\n", compute_frequency(frequencies->_4x, num_points));
+		fprintf(file, "5\t%lf\n", compute_frequency(frequencies->_5x, num_points));
+		fprintf(file, "6\t%lf\n", compute_frequency(frequencies->_6x, num_points));
+		fprintf(file, "7\t%lf\n", compute_frequency(frequencies->_7x, num_points));
+		fprintf(file, "8\t%lf\n", compute_frequency(frequencies->_8x, num_points));
+		fprintf(file, "9\t%lf\n", compute_frequency(frequencies->_9x, num_points));
 	}
 	else {
 		printf("Unable to open file.\n");
@@ -280,7 +280,7 @@ void monte_carlo(int num_points) {
 
 	// Print Frequencies
 	print_frequency(&frequencies, num_points);
-	write_to_file(&frequencies);
+	write_to_file(&frequencies, num_points);
 }
 
 /**
