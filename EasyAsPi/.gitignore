@@ -38,3 +38,6 @@ MCPi*
 
 # SFTP
 *.json
+
+# Excel
+~$results.xlsx
