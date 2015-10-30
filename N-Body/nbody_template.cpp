@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <ctime>
 
 #define N 9999     // number of bodies
 #define MASS 0     // row in array for mass
@@ -34,7 +35,7 @@ int main(int argc, char **argv) {
 
     srand48(time(NULL));
 
-  // TODO: assign each body a random initial positions and velocities
+    // TODO: assign each body a random initial positions and velocities
     for (int i = 0; i < N; i++) {
         body[i][MASS] = 0.001;
         body[i][X_VEL] = drand48();
@@ -54,6 +55,7 @@ int main(int argc, char **argv) {
     }
     printf("TER\nENDMDL\n");
 
+    // CANNOT BE PARALLEL
     // step through each time step
     for (int t = 0; t < tmax; t++) {
     // force calculation
@@ -65,6 +67,7 @@ int main(int argc, char **argv) {
         Fz_dir[i] = 0.0;
     }
 
+    // PARALLEL
     for (int x = 0; x < N; x++) {  // force on body x due to
         for (int i = 0; i < N; i++) {   // all other bodies 
             // position differences in x-, y-, and z-directions
@@ -90,16 +93,25 @@ int main(int argc, char **argv) {
 
                 // force between bodies i and x
                 float F = 0.0;
+                float Fg = 0.0;
+                float Fr = 0.0;
 
                 // if sufficiently far away, gravitation force
                 if (r > 2.0) {
                     // TODO: compute gravitational force between body i and x
-                    
+                    Fg = G * body[i][MASS] * body[x][MASS] / rr;
+
+                    Fr = MU * drand48();
+                    // Maybe Fr = MU * (drand48() - 0.5); (forces friction to be either positive or negative -- range -0.5, 0.5)
+
+                    F = Fg + Fr;
+
                     // TODO: compute frictional force
                     Fx_dir[x] += F * x_diff / r;  // resolve forces in x and y directions
                     Fy_dir[x] += F * y_diff / r;  // and accumulate forces
                     Fz_dir[x] += F * z_diff / r;  // 
-                } else {
+                } 
+                else {
                     // if too close, weak anti-gravitational force
                     float F = G * 0.01 * 0.01 / r;
                     Fx_dir[x] -= F * x_diff / r;  // resolve forces in x and y directions
@@ -112,8 +124,10 @@ int main(int argc, char **argv) {
 
     // update postions and velocity in array
     for (int i = 0; i < N; i++) {
-
         // TODO: update velocities
+        body[i][X_VEL] += Fx_dir[i] * dt / body[i][MASS];
+        body[i][Y_VEL] += Fy_dir[i] * dt / body[i][MASS];
+        body[i][Z_VEL] += Fz_dir[i] * dt / body[i][MASS];
         
         // periodic boundary conditions
         if (body[i][X_VEL] <  -BOXL * 0.5) body[i][X_VEL] += BOXL;
@@ -124,9 +138,11 @@ int main(int argc, char **argv) {
         if (body[i][Z_VEL] >=  BOXL * 0.5) body[i][Z_VEL] -= BOXL;
 
         // TODO: update positions
+        body[i][X_POS] += body[i][X_VEL] * dt;
+        body[i][Y_POS] += body[i][Y_VEL] * dt;
+        body[i][Z_POS] += body[i][Z_VEL] * dt;
 
-
-            // periodic boundary conditions
+        // periodic boundary conditions
         if (body[i][X_POS] <  -BOXL * 0.5) body[i][X_POS] += BOXL;
         if (body[i][X_POS] >=  BOXL * 0.5) body[i][X_POS] -= BOXL;
         if (body[i][Y_POS] <  -BOXL * 0.5) body[i][Y_POS] += BOXL;
