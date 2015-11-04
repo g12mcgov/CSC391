@@ -1,3 +1,10 @@
+/* 
+* @Author: grantmcgovern
+* @Date:   2015-10-28 12:52:26
+* @Last Modified by:   grantmcgovern
+* @Last Modified time: 2015-11-01 16:31:11
+*/
+
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
@@ -58,106 +65,105 @@ int main(int argc, char **argv) {
     // CANNOT BE PARALLEL
     // step through each time step
     for (int t = 0; t < tmax; t++) {
-    // force calculation
+        // force calculation
 
-    // TODO: initialize forces to zero
-    for (int i = 0; i < N; i++) {
-        Fx_dir[i] = 0.0;
-        Fy_dir[i] = 0.0;
-        Fz_dir[i] = 0.0;
-    }
+        // TODO: initialize forces to zero
+        for (int i = 0; i < N; i++) {
+            Fx_dir[i] = 0.0;
+            Fy_dir[i] = 0.0;
+            Fz_dir[i] = 0.0;
+        }
 
-    // PARALLEL
-    for (int x = 0; x < N; x++) {  // force on body x due to
-        for (int i = 0; i < N; i++) {   // all other bodies 
-            // position differences in x-, y-, and z-directions
-            float x_diff, y_diff, z_diff;
+        // PARALLEL
+        for (int x = 0; x < N; x++) {  // force on body x due to
+            for (int i = 0; i < N; i++) {   // all other bodies 
+                // position differences in x-, y-, and z-directions
+                float x_diff, y_diff, z_diff;
 
-            if (i != x) {
-                // TODO: calculate position difference between body i and x in x-,y-, and z-directions
-                x_diff = body[i][X_POS] - body[x][X_POS];
-                y_diff = body[i][Y_POS] - body[x][Y_POS];
-                z_diff = body[i][Z_POS] - body[x][Z_POS];
+                if (i != x) {
+                    // TODO: calculate position difference between body i and x in x-directions, y-directions, and z-directions
+                    x_diff = body[i][X_POS] - body[x][X_POS];
+                    y_diff = body[i][Y_POS] - body[x][Y_POS];
+                    z_diff = body[i][Z_POS] - body[x][Z_POS];
 
-                // periodic boundary conditions
-                if (x_diff <  -BOXL * 0.5) x_diff += BOXL;
-                if (x_diff >=  BOXL * 0.5) x_diff -= BOXL;
-                if (y_diff <  -BOXL * 0.5) y_diff += BOXL;
-                if (y_diff >=  BOXL * 0.5) y_diff -= BOXL;
-                if (z_diff <  -BOXL * 0.5) z_diff += BOXL;
-                if (z_diff >=  BOXL * 0.5) z_diff -= BOXL;
+                    // periodic boundary conditions
+                    if (x_diff <  -BOXL * 0.5) x_diff += BOXL;
+                    if (x_diff >=  BOXL * 0.5) x_diff -= BOXL;
+                    if (y_diff <  -BOXL * 0.5) y_diff += BOXL;
+                    if (y_diff >=  BOXL * 0.5) y_diff -= BOXL;
+                    if (z_diff <  -BOXL * 0.5) z_diff += BOXL;
+                    if (z_diff >=  BOXL * 0.5) z_diff -= BOXL;
 
-                // calculate distance (r)
-                float rr = (x_diff * x_diff + y_diff * y_diff + z_diff * z_diff);
-                float r = sqrt(rr);
+                    // calculate distance (r)
+                    float rr = (x_diff * x_diff + y_diff * y_diff + z_diff * z_diff);
+                    float r = sqrt(rr);
 
-                // force between bodies i and x
-                float F = 0.0;
-                float Fg = 0.0;
-                float Fr = 0.0;
+                    // force between bodies i and x
+                    float F = 0.0;
+                    float Fg = 0.0;
+                    float Fr = 0.0;
 
-                // if sufficiently far away, gravitation force
-                if (r > 2.0) {
-                    // TODO: compute gravitational force between body i and x
-                    Fg = G * body[i][MASS] * body[x][MASS] / rr;
+                    // if sufficiently far away, gravitation force
+                    if (r > 2.0) {
+                        // TODO: compute gravitational force between body i and x
+                        Fg = G * body[i][MASS] * body[x][MASS] / rr;
 
-                    Fr = MU * drand48();
-                    // Maybe Fr = MU * (drand48() - 0.5); (forces friction to be either positive or negative -- range -0.5, 0.5)
+                        Fr = MU * drand48();
+                        // Maybe Fr = MU * (drand48() - 0.5); (forces friction to be either positive or negative -- range -0.5, 0.5)
 
-                    F = Fg + Fr;
+                        F = Fg + Fr;
 
-                    // TODO: compute frictional force
-                    Fx_dir[x] += F * x_diff / r;  // resolve forces in x and y directions
-                    Fy_dir[x] += F * y_diff / r;  // and accumulate forces
-                    Fz_dir[x] += F * z_diff / r;  // 
-                } 
-                else {
-                    // if too close, weak anti-gravitational force
-                    float F = G * 0.01 * 0.01 / r;
-                    Fx_dir[x] -= F * x_diff / r;  // resolve forces in x and y directions
-                    Fy_dir[x] -= F * y_diff / r;  // and accumulate forces
-                    Fz_dir[x] -= F * z_diff / r;  // 
+                        // TODO: compute frictional force
+                        Fx_dir[x] += F * x_diff / r;  // resolve forces in x and y directions
+                        Fy_dir[x] += F * y_diff / r;  // and accumulate forces
+                        Fz_dir[x] += F * z_diff / r;  // 
+                    } 
+                    else {
+                        // if too close, weak anti-gravitational force
+                        float F = G * 0.01 * 0.01 / r;
+                        Fx_dir[x] -= F * x_diff / r;  // resolve forces in x and y directions
+                        Fy_dir[x] -= F * y_diff / r;  // and accumulate forces
+                        Fz_dir[x] -= F * z_diff / r;  // 
+                    }
                 }
             }
         }
-    }
 
-    // update postions and velocity in array
-    for (int i = 0; i < N; i++) {
-        // TODO: update velocities
-        body[i][X_VEL] += Fx_dir[i] * dt / body[i][MASS];
-        body[i][Y_VEL] += Fy_dir[i] * dt / body[i][MASS];
-        body[i][Z_VEL] += Fz_dir[i] * dt / body[i][MASS];
-        
-        // periodic boundary conditions
-        if (body[i][X_VEL] <  -BOXL * 0.5) body[i][X_VEL] += BOXL;
-        if (body[i][X_VEL] >=  BOXL * 0.5) body[i][X_VEL] -= BOXL;
-        if (body[i][Y_VEL] <  -BOXL * 0.5) body[i][Y_VEL] += BOXL;
-        if (body[i][Y_VEL] >=  BOXL * 0.5) body[i][Y_VEL] -= BOXL;
-        if (body[i][Z_VEL] <  -BOXL * 0.5) body[i][Z_VEL] += BOXL;
-        if (body[i][Z_VEL] >=  BOXL * 0.5) body[i][Z_VEL] -= BOXL;
+        // update postions and velocity in array
+        for (int i = 0; i < N; i++) {
+            // TODO: update velocities
+            body[i][X_VEL] += Fx_dir[i] * dt / body[i][MASS];
+            body[i][Y_VEL] += Fy_dir[i] * dt / body[i][MASS];
+            body[i][Z_VEL] += Fz_dir[i] * dt / body[i][MASS];
+            
+            // periodic boundary conditions
+            if (body[i][X_VEL] <  -BOXL * 0.5) body[i][X_VEL] += BOXL;
+            if (body[i][X_VEL] >=  BOXL * 0.5) body[i][X_VEL] -= BOXL;
+            if (body[i][Y_VEL] <  -BOXL * 0.5) body[i][Y_VEL] += BOXL;
+            if (body[i][Y_VEL] >=  BOXL * 0.5) body[i][Y_VEL] -= BOXL;
+            if (body[i][Z_VEL] <  -BOXL * 0.5) body[i][Z_VEL] += BOXL;
+            if (body[i][Z_VEL] >=  BOXL * 0.5) body[i][Z_VEL] -= BOXL;
 
-        // TODO: update positions
-        body[i][X_POS] += body[i][X_VEL] * dt;
-        body[i][Y_POS] += body[i][Y_VEL] * dt;
-        body[i][Z_POS] += body[i][Z_VEL] * dt;
+            // TODO: update positions
+            body[i][X_POS] += body[i][X_VEL] * dt;
+            body[i][Y_POS] += body[i][Y_VEL] * dt;
+            body[i][Z_POS] += body[i][Z_VEL] * dt;
 
-        // periodic boundary conditions
-        if (body[i][X_POS] <  -BOXL * 0.5) body[i][X_POS] += BOXL;
-        if (body[i][X_POS] >=  BOXL * 0.5) body[i][X_POS] -= BOXL;
-        if (body[i][Y_POS] <  -BOXL * 0.5) body[i][Y_POS] += BOXL;
-        if (body[i][Y_POS] >=  BOXL * 0.5) body[i][Y_POS] -= BOXL;
-        if (body[i][Z_POS] <  -BOXL * 0.5) body[i][Z_POS] += BOXL;
-        if (body[i][Z_POS] >=  BOXL * 0.5) body[i][Z_POS] -= BOXL;
+            // periodic boundary conditions
+            if (body[i][X_POS] <  -BOXL * 0.5) body[i][X_POS] += BOXL;
+            if (body[i][X_POS] >=  BOXL * 0.5) body[i][X_POS] -= BOXL;
+            if (body[i][Y_POS] <  -BOXL * 0.5) body[i][Y_POS] += BOXL;
+            if (body[i][Y_POS] >=  BOXL * 0.5) body[i][Y_POS] -= BOXL;
+            if (body[i][Z_POS] <  -BOXL * 0.5) body[i][Z_POS] += BOXL;
+            if (body[i][Z_POS] >=  BOXL * 0.5) body[i][Z_POS] -= BOXL;
+        }
 
-    }
-
-    // print out positions in PDB format
-    printf("MODEL %8d\n", t+1);
-    for (int i = 0; i < N; i++) {
-        printf("%s%7d  %s %s %s%4d    %8.3f%8.3f%8.3f  %4.2f  %4.3f\n",
-                   "ATOM", i+1, "CA ", "GLY", "A", i+1, body[i][X_POS], body[i][Y_POS], body[i][Z_POS], 1.00, 0.00);
-    }
-    printf("TER\nENDMDL\n");
+        // print out positions in PDB format
+        printf("MODEL %8d\n", t+1);
+        for (int i = 0; i < N; i++) {
+            printf("%s%7d  %s %s %s%4d    %8.3f%8.3f%8.3f  %4.2f  %4.3f\n",
+                       "ATOM", i+1, "CA ", "GLY", "A", i+1, body[i][X_POS], body[i][Y_POS], body[i][Z_POS], 1.00, 0.00);
+        }
+        printf("TER\nENDMDL\n");
     }  // end of time period loop
 }
